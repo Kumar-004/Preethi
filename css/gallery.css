@@ -97,6 +97,9 @@ h3 a {
 .container .card:nth-of-type(10)::before {
   filter: url(#wavy3);
 }
+.container .card:nth-of-type(11)::before {
+  filter: url(#wavy3);
+}
 
 .image1 {
   background-image: url("https://res.cloudinary.com/dswp5qfpm/image/upload/v1597476074/animal/rabbit_vq9gli.jpg");
