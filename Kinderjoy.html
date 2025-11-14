@@ -1,0 +1,158 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kinder Joy — Quick Unbox</title>
+  <style>
+    :root{--bg:#fff6eb;--accent:#ff6b6b;--choc:#8b5a2b;--toy:#ffd166}
+    *{box-sizing:border-box}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;min-height:100vh;margin:0;background:linear-gradient(180deg,var(--bg),#fff);display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{width:100%;max-width:900px;background:white;border-radius:18px;box-shadow:0 10px 30px rgba(15,15,15,0.08);overflow:hidden;display:grid;grid-template-columns:1fr 380px}
+    @media (max-width:880px){.card{grid-template-columns:1fr} .right{order:-1}}
+    .left{padding:30px}
+    h1{margin:0 0 8px;font-size:22px}
+    p.lead{margin:0 0 18px;color:#555}
+    .egg-wrap{display:flex;gap:18px;align-items:center}
+    .egg-scene{width:320px;height:320px;display:grid;place-items:center}
+    .egg{width:220px;height:220px;border-radius:50%;background:linear-gradient(180deg,#fff 0%, #ffe9e9 60%);position:relative;display:flex;align-items:center;justify-content:center;transition:transform .9s cubic-bezier(.2,.9,.2,1)}
+    .egg.top{transform-origin:50% 100%}
+    .egg.bottom{transform-origin:50% 0%}
+    .split .egg.top{transform:translateY(-60px) rotate(-12deg)}
+    .split .egg.bottom{transform:translateY(60px) rotate(10deg)}
+    .band{position:absolute;left:0;right:0;height:36px;top:50%;transform:translateY(-50%);background:linear-gradient(90deg,#ff8a8a,#ffd166);border-radius:20px;box-shadow:inset 0 -4px 8px rgba(0,0,0,0.06)}
+    .choc{width:120px;height:120px;border-radius:16px;background:linear-gradient(180deg,var(--choc),#6b3f22);display:grid;place-items:center;color:#fff;font-weight:700;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,0.12)}
+    .controls{margin-top:18px;display:flex;gap:12px;align-items:center}
+    button{cursor:pointer;border:0;padding:12px 16px;border-radius:12px;font-weight:600}
+    .btn-open{background:linear-gradient(90deg,#ff7a7a,#ffb46b);color:#502414}
+    .btn-reset{background:#f3f3f3;color:#333}
+    .meta{font-size:13px;color:#666;margin-top:10px}
+    .right{background:linear-gradient(180deg,#fff, #fff7f0);padding:26px;border-left:1px dashed rgba(0,0,0,0.04)}
+    .toy-card{background:linear-gradient(180deg,#fff,#fffaf0);border-radius:12px;padding:16px;box-shadow:0 6px 18px rgba(0,0,0,0.03)}
+    .toy-name{font-size:18px;margin:0 0 6px}
+    .toy-desc{margin:0;color:#555}
+    .confetti{position:absolute;pointer-events:none;inset:0;z-index:100}
+    footer{font-size:13px;color:#888;margin-top:14px}
+    .hint{display:inline-block;background:#fffbf2;padding:8px;border-radius:10px;margin-top:12px}
+  </style>
+</head>
+<body>
+  <div class="card" id="app">
+    <div class="left">
+      <h1>Kinder Joy — Quick Unbox</h1>
+      <p class="lead">Click the button to "open" a Kinder Joy. See the chocolate and a surprise toy. Designed as a small interactive demo you can run in any browser.</p><div class="egg-wrap">
+    <div class="egg-scene" aria-hidden="true">
+      <div class="egg top" id="eggTop" role="img" aria-label="Top half of Kinder Joy egg">
+        <div class="band"></div>
+      </div>
+      <div class="egg bottom" id="eggBottom" role="img" aria-label="Bottom half of Kinder Joy egg">
+        <div class="choc" id="choc">CHOC</div>
+      </div>
+    </div>
+    <div style="flex:1">
+      <div class="controls">
+        <button class="btn-open" id="openBtn">Open Kinder Joy</button>
+        <button class="btn-reset" id="resetBtn">Reset</button>
+      </div>
+      <div class="meta">Tip: press <kbd>O</kbd> to open, <kbd>R</kbd> to reset</div>
+
+      <div class="hint">This is a demo — no real candy involved 🥚🍫</div>
+    </div>
+  </div>
+
+  <footer>Made quickly — copy the HTML into a file and open it in your browser.</footer>
+</div>
+
+<aside class="right">
+  <div class="toy-card" id="toyCard">
+    <p class="toy-name">Surprise Toy</p>
+    <p class="toy-desc">Not opened yet — click <strong>Open Kinder Joy</strong> to reveal a toy and get a fun description.</p>
+  </div>
+  <div style="height:14px"></div>
+  <details style="font-size:13px">
+    <summary>How this works</summary>
+    <p style="margin:8px 0 0;color:#555">Vanilla HTML/CSS/JS. Clicking opens the egg by toggling a CSS class and shows a random toy and a little confetti effect.</p>
+  </details>
+</aside>
+
+<canvas class="confetti" id="confettiCanvas"></canvas>
+
+  </div>  <script>
+    // Quick interactive script — single-file demo
+    const app = document.getElementById('app');
+    const openBtn = document.getElementById('openBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const choc = document.getElementById('choc');
+    const toyCard = document.getElementById('toyCard');
+    const confettiCanvas = document.getElementById('confettiCanvas');
+
+    const toys = [
+      {name: 'Mini Robot', desc: 'A tiny wind-up robo friend.'},
+      {name: 'Rubber Duck', desc: 'Quacky and squeaky — bath time ready.'},
+      {name: 'Puzzle Wheel', desc: 'Twist to solve this micro puzzle.'},
+      {name: 'Sticker Pack', desc: 'A sheet of colorful stickers.'},
+      {name: 'Mini Car', desc: 'Pull-back racer with tiny wheels.'},
+      {name: 'Magic Ring', desc: 'One-size-fits-most plastic ring.'}
+    ];
+
+    let opened = false;
+
+    function reveal() {
+      if (opened) return;
+      opened = true;
+      app.classList.add('split');
+      choc.textContent = 'YUM';
+      const toy = toys[Math.floor(Math.random()*toys.length)];
+      toyCard.querySelector('.toy-name').textContent = toy.name;
+      toyCard.querySelector('.toy-desc').textContent = toy.desc;
+      startConfetti();
+    }
+
+    function reset() {
+      opened = false;
+      app.classList.remove('split');
+      choc.textContent = 'CHOC';
+      toyCard.querySelector('.toy-name').textContent = 'Surprise Toy';
+      toyCard.querySelector('.toy-desc').textContent = 'Not opened yet — click Open Kinder Joy to reveal a toy and get a fun description.';
+      stopConfetti();
+    }
+
+    openBtn.addEventListener('click', reveal);
+    resetBtn.addEventListener('click', reset);
+    window.addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='o') reveal(); if(e.key.toLowerCase()==='r') reset(); })
+
+    // --- Very small confetti effect (no libraries) ---
+    const ctx = confettiCanvas.getContext('2d');
+    let confetti = [];
+    let raf = null;
+
+    function resizeCanvas(){ confettiCanvas.width = app.clientWidth; confettiCanvas.height = app.clientHeight; }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function startConfetti(){
+      confetti = Array.from({length:80}).map(()=>({
+        x: Math.random()*confettiCanvas.width,
+        y: Math.random()*confettiCanvas.height/2 - 50,
+        r: 6+Math.random()*8,
+        d: Math.random()*3+2,
+        color: ['#ff6b6b','#ffd166','#6bcfff','#9b8cff'][Math.floor(Math.random()*4)],
+        tilt: Math.random()*0.4
+      }));
+      if (!raf) loop();
+    }
+    function stopConfetti(){ confetti = []; if (raf){ cancelAnimationFrame(raf); raf=null; clearCanvas(); }}
+    function clearCanvas(){ ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height); }
+
+    function loop(){ clearCanvas(); for(let i=0;i<confetti.length;i++){ const p=confetti[i]; p.y += p.d; p.x += Math.sin(p.y/20)*2; p.tilt += 0.05; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.tilt); ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*0.6); ctx.restore(); if(p.y>confettiCanvas.height+20){ p.y = -20; p.x = Math.random()*confettiCanvas.width; } } raf = requestAnimationFrame(loop); }
+
+    // accessibility: announce updates via ARIA live region
+    const live = document.createElement('div'); live.setAttribute('aria-live','polite'); live.style.position='absolute'; live.style.left='-9999px';
+    document.body.appendChild(live);
+    function announce(msg){ live.textContent = msg; }
+    openBtn.addEventListener('click', ()=>announce('Kinder Joy opened. Toy revealed.'));
+    resetBtn.addEventListener('click', ()=>announce('Kinder Joy reset.'));
+
+  </script></body>
+</html>
